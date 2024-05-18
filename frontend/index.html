@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+    <style>
+        body{
+            background-color: bisque;
+        }
+        button {
+            background-color: rgb(10, 81, 213);
+            padding: 5px 15px;
+            border: none;
+            outline: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all .2s ease-in-out;
+            box-shadow: 2px 8px 8px black;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            transition: all .2s ease-in-out;
+        }
+
+        button:active {
+            transform: scale(1.05);
+            transition: all .2s ease-in-out;
+        }
+
+        nav {
+            display: flex;
+            height: min-content;
+            padding: 15px 0;
+            align-items: center;
+            justify-content: space-evenly;
+            width: 100%;
+        }
+
+        nav>p {
+            all: unset;
+            margin: 0;
+        }
+
+        section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+        }
+
+        input {
+            padding: 5px 15px;
+            border: none;
+            outline: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all .2s ease-in-out;
+            box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.525);
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div style="display: flex; gap: 10px;">
+            <h3>User address:</h3>
+            <h3 id="user"></h3>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <h3> Connected smart contract: </h3>
+            <h3 id="contract"></h3>
+        </div>
+
+        <button onclick="connect()">Connect</button>
+    </nav>
+
+    <section>
+        <h1>Note: <span id="note"></span></h1>
+        <input type="text" id="note_value" placeholder="Note...">
+        <div>
+            <button onclick="get_note()">Get</button>
+            <button onclick="set_note()">Set</button>
+        </div>
+    </section>
+    <script>
+
+        let account;
+        let contract;
+
+        const connect = async () => {
+            if (window.ethereum !== 'undefined') {
+                const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+
+                account = accounts[0];
+                document.getElementById('user').innerHTML = account;
+            }
+
+            const Address = '0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E'
+
+            const ABI = [
+                {
+                    "inputs": [],
+                    "name": "get_note",
+                    "outputs": [
+                        {
+                            "internalType": "string",
+                            "name": "",
+                            "type": "string"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "string",
+                            "name": "_note",
+                            "type": "string"
+                        }
+                    ],
+                    "name": "set_note",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ]
+
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            contract = new ethers.Contract(Address, ABI, signer);
+            document.getElementById('contract').innerHTML = contract.address;
+        }
+
+        const get_note = async () => {
+            const note = await contract.get_note();
+            document.getElementById('note').innerText = note;
+        }
+
+        const set_note = async () => {
+            const new_note = document.getElementById('note_value').value;
+            await contract.set_note(new_note);
+        }
+
+
+    </script>
+</body>
+
+</html>
